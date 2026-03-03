@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DHANUSH | Data Engineering Console</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --sidebar-bg: #0f172a;
+            --accent-cyan: #06b6d4;
+        }
+
+        body {
+            background-color: #0b0f1a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%), 
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
+            min-height: 100vh;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #f8fafc;
+        }
+
+        /* Top Navigation Header */
+        .top-nav {
+            padding: 25px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-text {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        /* Glass Cards */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            color: #1e293b;
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 20px 25px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Custom Badge */
+        .badge-custom {
+            background: #f1f5f9;
+            color: #6366f1;
+            border: 1px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .badge-custom:hover {
+            background: #6366f1;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Forms & Inputs */
+        .form-select {
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn-update {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+        .btn-update:hover {
+            background: #000;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-export {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+        }
+
+        /* Table Aesthetics */
+        .table-container {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 16px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .table tbody td {
+            padding: 16px;
+            font-size: 0.85rem;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* Animation */
+        .pulse-icon {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<header class="top-nav">
+    <div class="d-flex align-items: center; gap: 40px;">
+        
+        <div class="d-none d-md-flex align-items-center gap-2" style="font-size: 0.8rem; color: #94a3b8;">
+            <i class="bi bi-cpu"></i> DATA ENGINE ACTIVE
+        </div>
+    </div>
+    
+    <div class="d-flex align-items-center gap-3">
+        <div class="text-end d-none d-sm-block me-3">
+            <div style="font-size: 0.85rem; font-weight: 700; color: white;">Dhanush</div>
+            <div style="font-size: 0.7rem; color: #22c55e;">System Admin</div>
+        </div>
+        <a href="/download" class="btn btn-export">
+            <i class="bi bi-file-earmark-arrow-down-fill me-2"></i>Export CSV
+        </a>
+    </div>
+</header>
+
+<div class="container-fluid py-5 px-4">
+    <div class="row g-4">
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4"><i class="bi bi-tags-fill text-primary"></i> Dataset Schema</h4>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for col in columns %}
+                            <span class="badge-custom">{{ col }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title"><i class="bi bi-gear-wide-connected text-primary"></i> Configuration</h4>
+                </div>
+                <div class="card-body">
+                    <form action="/generate_chart" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">X-AXIS DIMENSION</label>
+                            <select name="x_column" class="form-select bg-light border-0">
+                                {% for col in columns %}
+                                    <option value="{{ col }}">{{ col }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Y-AXIS METRIC (NUMERIC)</label>
+                            <select name="y_column" class="form-select bg-light border-0">
+                                {% for col in numeric_columns %}
+                                    <option value="{{ col }}">{{ col }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted">VISUALIZATION STYLE</label>
+                            <select name="chart_type" class="form-select bg-light border-0">
+                                <option value="bar">🚀 Professional Bar Chart</option>
+                                <option value="line">📈 Dynamic Line Graph</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-update w-100">
+                            Apply Changes <i class="bi bi-lightning-fill ms-1 pulse-icon"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card" style="min-height: 450px;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title"><i class="bi bi-graph-up-arrow text-primary"></i> Analytics Output</h4>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill" style="font-size: 0.7rem;">Live Render Ready</span>
+                </div>
+                <div class="card-body">
+                    {% if chart %}
+                        <div class="text-center p-2">
+                            <img src="{{ url_for('static', filename='chart.png') }}" class="img-fluid rounded-4 shadow-lg border">
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-bar-chart-steps text-muted" style="font-size: 5rem; opacity: 0.2;"></i>
+                            </div>
+                            <h5 class="fw-bold">No Data Visualized</h5>
+                            <p class="text-muted small">Select your dimensions on the left panel to generate engineering insights.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title"><i class="bi bi-database-fill text-primary"></i> Data Preview <span class="text-muted fw-normal font-monospace ms-2" style="font-size: 0.8rem;">(Top 5 Rows)</span></h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        {% for col in columns %}
+                                            <th>{{ col }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in preview %}
+                                        <tr>
+                                            {% for col in columns %}
+                                                <td>{{ row[col] }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

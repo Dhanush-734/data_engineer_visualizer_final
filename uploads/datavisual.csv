@@ -1,0 +1,39 @@
+ID,Name,Department,CGPA,Skills,Internship,Placed,Company,Package
+101,Amit,CSE,8.5,"Python, SQL",Yes,Yes,Infosys,6.5
+102,Riya,ECE,7.2,MATLAB,No,No,NA,0
+103,Arjun,IT,9.1,"Java, React",Yes,Yes,TCS,7.2
+104,Pooja,CSE,8.9,"Python, ML",Yes,Yes,Amazon,12
+105,Kiran,ME,6.8,AutoCAD,No,No,NA,0
+106,Sneha,ECE,8,Embedded,Yes,Yes,Wipro,5.5
+107,Rahul,IT,7.5,"HTML, CSS",No,Yes,Capgemini,4
+108,Vikram,CSE,8.2,"C++, Java",Yes,Yes,Google,18.5
+109,Ananya,ECE,7.9,VLSI,Yes,Yes,Intel,11.2
+110,Suresh,ME,6.5,SolidWorks,No,No,NA,0
+111,Megha,IT,8.7,"AWS, Docker",Yes,Yes,Microsoft,16
+112,Deepak,CSE,7.1,SQL,No,No,NA,0
+113,Aditi,ECE,8.4,"Python, IoT",Yes,Yes,Samsung,9.5
+114,Yash,IT,7.8,PHP,No,Yes,Accenture,5.2
+115,Priyanka,CSE,9.3,"AI, PyTorch",Yes,Yes,Meta,22
+116,Rohan,ME,7,Thermodynamics,No,Yes,Tata Motors,4.8
+117,Ishani,ECE,8.1,Arduino,Yes,Yes,Nvidia,13.4
+118,Gaurav,IT,6.9,Javascript,No,No,NA,0
+119,Neha,CSE,8.6,"Python, Django",Yes,Yes,Zoho,8.2
+120,Karthik,ECE,7.4,PCB Design,No,No,NA,0
+121,Rohit,IT,9,"React, Node.js",Yes,Yes,Flipkart,14.5
+122,Divya,ME,7.2,"CAD, CAM",No,Yes,Bosch,6.1
+123,Manish,CSE,8.1,"Java, Spring",Yes,Yes,Oracle,15
+124,Kavya,ECE,8.8,"VHDL, Embedded",Yes,Yes,Qualcomm,17.3
+125,Adarsh,IT,6.7,"HTML, CSS",No,No,NA,0
+126,Simran,CSE,9.4,"AI, ML",Yes,Yes,OpenAI Labs,24
+127,Tarun,ME,7.5,Robotics,Yes,Yes,ISRO,12.8
+128,Nikhil,ECE,6.9,Microcontrollers,No,No,NA,0
+129,Aakash,IT,8.3,"Python, SQL",Yes,Yes,Deloitte,9.7
+130,Shruti,CSE,7.6,Data Structures,No,Yes,Cognizant,6.9
+131,Varun,ME,8,"SolidWorks, AutoCAD",Yes,Yes,L&T,10.4
+132,Pooja,ECE,9.1,"IoT, Python",Yes,Yes,Texas Instruments,18.9
+133,Ritesh,IT,7.3,"PHP, MySQL",No,Yes,HCL,5.8
+134,Snehal,CSE,8.9,"DevOps, Docker",Yes,Yes,IBM,16.5
+135,Harsh,ME,6.8,Manufacturing,No,No,NA,0
+136,Aishwarya,ECE,8.2,Signal Processing,Yes,Yes,Siemens,11.6
+137,Pranav,IT,9.2,Full Stack,Yes,Yes,Paytm,19.4
+138,Meera,CSE,7.7,"Python, Flask",No,Yes,TCS,7.5
