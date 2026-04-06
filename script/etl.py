@@ -1,37 +1,32 @@
 import pandas as pd
 import os
 
-def run_etl(file_path):
+def run_etl(file_path: str, user_id="default"):
+    """Load, clean, and save dataset for a given user."""
 
+    # ── Load ──────────────────────────────────────────────────────────────────
     if file_path.endswith(".xlsx"):
         df = pd.read_excel(file_path)
-    elif file_path.endswith(".csv"):
-        try:
-            df = pd.read_csv(file_path)
-        except UnicodeDecodeError:
-            df = pd.read_csv(file_path, encoding="latin1")
     else:
-        raise ValueError("Unsupported file format")
+        df = pd.read_csv(file_path, encoding="latin1")
 
-    original_rows = df.shape[0]
+    # ── Clean ─────────────────────────────────────────────────────────────────
+    # Strip currency / comma characters then try numeric conversion
+    for col in df.columns:
+        if df[col].dtype == object:
+            cleaned = df[col].astype(str).str.replace(r'[\$,]', '', regex=True).str.strip()
+            converted = pd.to_numeric(cleaned, errors='coerce')
+            # Only replace column if most values converted successfully (>50 %)
+            if converted.notna().mean() > 0.5:
+                df[col] = converted
+            else:
+                df[col] = cleaned   # keep as clean string
 
-    # 🔥 Clean generically (no hardcoded column names)
-    df = df.dropna()
-    df = df.drop_duplicates()
+    df.drop_duplicates(inplace=True)
+    df.fillna(0, inplace=True)
 
-    cleaned_rows = df.shape[0]
-
-    os.makedirs("output", exist_ok=True)
-    output_path = os.path.join("output", "cleaned_data.csv")
-    df.to_csv(output_path, index=False)
-
-    preview_data = df.head(5).to_dict(orient="records")
-    missing_values = int(df.isnull().sum().sum())
-
-    return {
-        "original_rows": original_rows,
-        "cleaned_rows": cleaned_rows,
-        "columns": list(df.columns),
-        "preview": preview_data,
-        "missing_values": missing_values
-    }
+    # ── Save ──────────────────────────────────────────────────────────────────
+    os.makedirs("outputs", exist_ok=True)
+    out_path = os.path.join("outputs", f"cleaned_data_{user_id}.csv")
+    df.to_csv(out_path, index=False)
+    print(f"[ETL] Saved cleaned data → {out_path}  ({len(df)} rows, {len(df.columns)} cols)")

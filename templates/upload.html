@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Import Dataset — Analytics Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#070b12; --surface:#0e1420; --surface2:#121a28;
+    --border:rgba(255,255,255,0.07); --accent:#00e5ff; --accent2:#7c6aff;
+    --text:#e8edf5; --muted:#5a6478; --green:#10b981;
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:'DM Sans',sans-serif; background:var(--bg);
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; color:var(--text); overflow:hidden;
+  }
+
+  .bg-grid {
+    position:fixed; inset:0; z-index:0;
+    background-image: linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+    background-size:56px 56px;
+    animation:gridShift 25s linear infinite;
+  }
+  @keyframes gridShift { 0%{background-position:0 0} 100%{background-position:56px 56px} }
+
+  .orb { position:fixed; border-radius:50%; filter:blur(100px); z-index:0; pointer-events:none; }
+  .orb1 { width:500px;height:500px;background:rgba(0,229,255,0.05);top:-150px;right:-100px; }
+  .orb2 { width:400px;height:400px;background:rgba(124,106,255,0.06);bottom:-100px;left:-100px; }
+
+  /* Top bar */
+  .topbar {
+    position:fixed; top:0; left:0; right:0; z-index:10;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 40px;
+    border-bottom:1px solid var(--border);
+    background:rgba(7,11,18,0.8);
+    backdrop-filter:blur(12px);
+  }
+  .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; display:flex; align-items:center; gap:10px; }
+  .logo-dot { width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 8px var(--accent); }
+  .user-pill {
+    display:flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,0.05); border:1px solid var(--border);
+    border-radius:100px; padding:6px 14px; font-size:0.82rem;
+  }
+  .user-pill .dot { width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 6px var(--green); }
+  .logout-btn {
+    background:transparent; border:1px solid var(--border); border-radius:8px;
+    color:var(--muted); font-family:'DM Sans',sans-serif; font-size:0.82rem;
+    padding:6px 14px; cursor:pointer; transition:border-color 0.2s, color 0.2s; text-decoration:none;
+  }
+  .logout-btn:hover { border-color:rgba(255,80,80,0.4); color:#ff6b6b; }
+
+  /* Main content */
+  .main { position:relative; z-index:1; width:100%; max-width:640px; padding:120px 24px 40px; }
+
+  .heading { text-align:center; margin-bottom:48px; animation:fadeUp 0.5s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .heading .tag {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(0,229,255,0.08); border:1px solid rgba(0,229,255,0.15);
+    border-radius:100px; padding:4px 14px; font-size:0.78rem;
+    color:var(--accent); letter-spacing:0.06em; text-transform:uppercase;
+    margin-bottom:20px;
+  }
+  .heading h1 { font-family:'Syne',sans-serif; font-size:2.4rem; font-weight:800; line-height:1.1; margin-bottom:12px; }
+  .heading p { color:var(--muted); font-size:0.95rem; }
+
+  /* Upload card */
+  .upload-card {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:40px;
+    animation:fadeUp 0.5s 0.1s ease both;
+    box-shadow:0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .drop-zone {
+    border:2px dashed rgba(255,255,255,0.1);
+    border-radius:18px;
+    padding:56px 32px;
+    text-align:center;
+    cursor:pointer;
+    background:rgba(255,255,255,0.02);
+    position:relative;
+    overflow:hidden;
+    transition:all 0.3s ease;
+    margin-bottom:28px;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color:var(--accent);
+    background:rgba(0,229,255,0.04);
+    transform:translateY(-2px);
+    box-shadow:0 0 30px rgba(0,229,255,0.06);
+  }
+  #fileInput {
+    position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
+  }
+  .upload-icon {
+    width:72px; height:72px; margin:0 auto 20px;
+    background:linear-gradient(135deg, rgba(0,229,255,0.1), rgba(124,106,255,0.1));
+    border:1px solid rgba(0,229,255,0.15);
+    border-radius:20px; display:flex; align-items:center; justify-content:center;
+    pointer-events:none; transition:transform 0.3s;
+  }
+  .drop-zone:hover .upload-icon { transform:scale(1.05); }
+  .upload-icon svg { width:32px;height:32px;stroke:var(--accent); }
+  .drop-title { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:700; margin-bottom:6px; pointer-events:none; }
+  .drop-sub { font-size:0.85rem; color:var(--muted); pointer-events:none; }
+  .drop-sub span { color:var(--accent); font-weight:600; }
+
+  .format-pills { display:flex; justify-content:center; gap:8px; margin-top:16px; pointer-events:none; }
+  .pill {
+    background:rgba(255,255,255,0.04); border:1px solid var(--border);
+    border-radius:100px; padding:4px 12px; font-size:0.75rem; color:var(--muted);
+  }
+
+  /* File selected state */
+  .selected-file {
+    display:none; align-items:center; gap:14px;
+    background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.2);
+    border-radius:14px; padding:14px 18px; margin-bottom:20px;
+  }
+  .selected-file.show { display:flex; }
+  .file-icon { font-size:1.4rem; }
+  .file-info strong { display:block; font-size:0.9rem; font-weight:600; color:var(--green); }
+  .file-info span { font-size:0.78rem; color:var(--muted); }
+
+  .btn-submit {
+    width:100%; padding:17px; border:none; border-radius:14px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#070b12; font-family:'Syne',sans-serif; font-weight:700; font-size:1rem;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
+    transition:opacity 0.2s, transform 0.15s; letter-spacing:0.01em;
+  }
+  .btn-submit:hover { opacity:0.9; transform:translateY(-1px); }
+  .btn-submit svg { width:18px;height:18px;stroke:#070b12; }
+
+  /* Info strip */
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<nav class="topbar">
+  <div class="logo"><div class="logo-dot"></div>Analytics Studio</div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="user-pill"><div class="dot"></div>{{ current_user.username }}</div>
+    <a href="/logout" class="logout-btn">Logout</a>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="heading">
+    <div class="tag">⚡ ETL Pipeline Ready</div>
+    <h1>Import Your Dataset</h1>
+    <p>Upload CSV or Excel — we'll clean and analyze it automatically</p>
+  </div>
+
+  <div class="upload-card">
+    <form action="/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+      <div class="drop-zone" id="dropZone">
+        <input type="file" name="file" id="fileInput" accept=".csv,.xlsx" required>
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <div class="drop-title" id="dropTitle">Drop your dataset here</div>
+        <div class="drop-sub" id="dropSub">or <span>browse files</span> to upload</div>
+        <div class="format-pills"><div class="pill">.CSV</div><div class="pill">.XLSX</div></div>
+      </div>
+
+      <div class="selected-file" id="selectedFile">
+        <div class="file-icon">📄</div>
+        <div class="file-info">
+          <strong id="fileName">file.csv</strong>
+          <span id="fileSize">Ready to process</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        Initialize Analyzer
+      </button>
+    </form>
+  </div>
+
+</div>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const dropZone  = document.getElementById('dropZone');
+  const dropTitle = document.getElementById('dropTitle');
+  const dropSub   = document.getElementById('dropSub');
+  const selFile   = document.getElementById('selectedFile');
+  const fileName  = document.getElementById('fileName');
+  const fileSize  = document.getElementById('fileSize');
+
+  fileInput.addEventListener('change', function() {
+    if (this.files.length > 0) {
+      const f = this.files[0];
+      const kb = (f.size / 1024).toFixed(1);
+      dropTitle.textContent = 'File attached';
+      dropSub.innerHTML = '<span style="color:var(--green)">Change file</span>';
+      dropZone.style.borderColor = 'var(--green)';
+      selFile.classList.add('show');
+      fileName.textContent = f.name;
+      fileSize.textContent = kb + ' KB · Ready to process';
+    }
+  });
+
+  ['dragover','dragenter'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.remove('dragover')));
+</script>
+</body>
+</html>
