@@ -36,7 +36,7 @@ from script.etl import run_etl
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:devi7977%40dhanush@localhost/etl_dashboard'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 app.config['SECRET_KEY'] = 'dhanush_secret_2026'
 
 db = SQLAlchemy(app)
