@@ -1,173 +1,73 @@
-import pandas as pd
-import os
-from sqlalchemy import create_engine
+import requests
+import psycopg2
+
+API_KEY = "537d1e934a062c4e8001326d07df9566"
 
 
-def run_etl(file_path: str, user_id="default"):
+cities = [
 
-    """
-    Load, clean, process and save dataset
-    for a specific user.
-    """
+    # Karnataka Cities
 
-    # ---------------------------------------------------
-    # LOAD DATA
-    # ---------------------------------------------------
+    "Bengaluru",
+    "Mysuru",
+    "Mangaluru",
+    "Hubli",
+    "Belagavi",
+    "Shivamogga",
+    "Udupi",
+    "Davanagere",
+    "Ballari",
+    "Tumakuru",
 
-    if file_path.endswith(".xlsx"):
+    # Major Indian Metro Cities
 
-        df = pd.read_excel(file_path)
+    "Mumbai",
+    "Delhi",
+    "Chennai",
+    "Hyderabad",
+    "Kolkata"
 
-    else:
+]
 
-        df = pd.read_csv(
-            file_path,
-            encoding="latin1"
+
+def run_etl():
+
+    conn = psycopg2.connect(
+        host="db",
+        database="analytics_db",
+        user="postgres",
+        password="postgres"
+    )
+
+    cur = conn.cursor()
+
+    for city in cities:
+
+        url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+
+        response = requests.get(url)
+        data = response.json()
+
+        print(data)
+
+        if 'main' not in data:
+            print(f"ERROR FOR CITY: {city}")
+            continue
+
+        temp = data['main']['temp']
+        humidity = data['main']['humidity']
+
+        cur.execute(
+            """
+            INSERT INTO weather (city, temp, humidity)
+            VALUES (%s, %s, %s)
+            """,
+            (city, temp, humidity)
         )
 
-    # ---------------------------------------------------
-    # MAKE DUPLICATE COLUMN NAMES UNIQUE
-    # ---------------------------------------------------
+    conn.commit()
 
-    cols = []
-    counts = {}
+    cur.close()
+    conn.close()
 
-    for col in df.columns:
-
-        if col in counts:
-
-            counts[col] += 1
-            cols.append(f"{col}_{counts[col]}")
-
-        else:
-
-            counts[col] = 0
-            cols.append(col)
-
-    df.columns = cols
-
-    # ---------------------------------------------------
-    # DATA QUALITY METRICS
-    # ---------------------------------------------------
-
-    original_rows = len(df)
-
-    duplicate_count = df.duplicated().sum()
-
-    missing_before = df.isnull().sum().sum()
-
-    # ---------------------------------------------------
-    # CLEANING
-    # ---------------------------------------------------
-
-    for col in df.columns:
-
-        if df[col].dtype == object:
-
-            cleaned = (
-                df[col]
-                .astype(str)
-                .str.replace(r'[\$,]', '', regex=True)
-                .str.strip()
-            )
-
-            converted = pd.to_numeric(
-                cleaned,
-                errors='coerce'
-            )
-
-            # Convert only if majority numeric
-            if converted.notna().mean() > 0.5:
-
-                df[col] = converted
-
-            else:
-
-                df[col] = cleaned
-
-    # Remove duplicates
-    df.drop_duplicates(inplace=True)
-
-    # Fill missing values
-    for col in df.columns:
-
-        if df[col].dtype == object:
-
-            df[col] = df[col].fillna("Unknown")
-
-        else:
-
-            df[col] = df[col].fillna(0)
-
-    missing_after = df.isnull().sum().sum()
-
-    final_rows = len(df)
-
-    # ---------------------------------------------------
-    # QUALITY REPORT
-    # ---------------------------------------------------
-
-    quality_report = {
-
-        "original_rows": int(original_rows),
-
-        "duplicate_count": int(duplicate_count),
-
-        "missing_before": int(missing_before),
-
-        "missing_after": int(missing_after),
-
-        "final_rows": int(final_rows)
-
-    }
-
-    # ---------------------------------------------------
-    # SAVE DATA TO POSTGRESQL
-    # ---------------------------------------------------
-
-    database_url = os.getenv(
-        "SQLALCHEMY_DATABASE_URI"
-    )
-
-    if database_url:
-
-        engine = create_engine(database_url)
-
-        df.to_sql(
-            "cleaned_data",
-            engine,
-            if_exists="replace",
-            index=False
-        )
-
-        print("[ETL] Data saved to PostgreSQL")
-
-    # ---------------------------------------------------
-    # SAVE CLEANED CSV
-    # ---------------------------------------------------
-
-    os.makedirs("outputs", exist_ok=True)
-
-    output_path = os.path.join(
-        "outputs",
-        f"cleaned_data_{user_id}.csv"
-    )
-
-    df.to_csv(
-        output_path,
-        index=False
-    )
-
-    print(
-        f"[ETL] Saved cleaned data → {output_path}"
-    )
-
-    print(
-        f"[ETL] Rows: {len(df)} | Columns: {len(df.columns)}"
-    )
-
-    # ---------------------------------------------------
-    # RETURN
-    # ---------------------------------------------------
-
-    return output_path, quality_report
+    print("MULTI CITY ETL DONE")

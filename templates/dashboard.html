@@ -1,1742 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Analytics Studio — Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<style>
-/* ═══════════════════════════════════════════
-   TOKENS
-═══════════════════════════════════════════ */
-:root {
-  --bg:         #04050a;
-  --bg2:        #080c14;
-  --panel:      #0b1020;
-  --panel2:     #0d1424;
-  --line:       rgba(255,255,255,0.055);
-  --line2:      rgba(255,255,255,0.10);
-  --teal:       #2de2cb;
-  --teal2:      #00f5e4;
-  --violet:     #a78bfa;
-  --amber:      #fbbf24;
-  --rose:       #f87171;
-  --emerald:    #34d399;
-  --text:       #e8edf8;
-  --text2:      #8a9bb8;
-  --text3:      #3d4f6a;
-  --gold:       #fbbf24;
-  --silver:     #94a3b8;
-  --bronze:     #c2855a;
-  --r-sm:       10px;
-  --r-md:       16px;
-  --r-lg:       22px;
-  --r-xl:       28px;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-
-/* ═══════════════════════════════════════════
-   BACKGROUND CANVAS
-═══════════════════════════════════════════ */
-.bg-canvas {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-}
-.bg-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(45,226,203,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(45,226,203,0.025) 1px, transparent 1px);
-  background-size: 52px 52px;
-  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 100%);
-}
-.bg-orb1 {
-  position: absolute; border-radius: 50%;
-  width: 900px; height: 900px;
-  background: radial-gradient(circle, rgba(45,226,203,0.06) 0%, transparent 60%);
-  top: -400px; right: -300px;
-  animation: drift1 18s ease-in-out infinite alternate;
-}
-.bg-orb2 {
-  position: absolute; border-radius: 50%;
-  width: 700px; height: 700px;
-  background: radial-gradient(circle, rgba(167,139,250,0.05) 0%, transparent 60%);
-  bottom: -250px; left: -200px;
-  animation: drift2 22s ease-in-out infinite alternate;
-}
-.bg-orb3 {
-  position: absolute; border-radius: 50%;
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(251,191,36,0.03) 0%, transparent 60%);
-  top: 40%; left: 40%;
-  animation: drift3 28s ease-in-out infinite alternate;
-}
-@keyframes drift1 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(60px,40px) scale(1.08); } }
-@keyframes drift2 { 0% { transform: translate(0,0); } 100% { transform: translate(-40px,60px); } }
-@keyframes drift3 { 0% { transform: translate(0,0); } 100% { transform: translate(30px,-50px); } }
-
-/* ═══════════════════════════════════════════
-   TOPBAR
-═══════════════════════════════════════════ */
-.topbar {
-  position: sticky; top: 0; z-index: 500;
-  height: 60px;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 24px;
-  background: rgba(4,5,10,0.8);
-  backdrop-filter: blur(28px) saturate(180%);
-  border-bottom: 1px solid var(--line);
-}
-
-.logo {
-  display: flex; align-items: center; gap: 10px;
-  text-decoration: none; color: var(--text);
-}
-.logo-mark {
-  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--teal) 0%, var(--violet) 100%);
-  display: flex; align-items: center; justify-content: center;
-  position: relative; overflow: hidden;
-}
-.logo-mark::after {
-  content: 'AS';
-  font-family: 'DM Mono', monospace;
-  font-size: 0.6rem; font-weight: 500;
-  color: #04050a;
-  position: relative; z-index: 1;
-}
-.logo-name {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700; font-size: 0.9rem;
-  letter-spacing: 0.04em;
-  color: var(--text);
-}
-
-.topbar-mid {
-  display: flex; align-items: center; gap: 8px;
-}
-.breadcrumb {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 0.74rem; color: var(--text3);
-  font-family: 'DM Mono', monospace;
-}
-.breadcrumb .sep { color: var(--text3); }
-.breadcrumb .active { color: var(--text2); }
-
-.topbar-right {
-  display: flex; align-items: center; gap: 8px;
-}
-.user-pill {
-  display: flex; align-items: center; gap: 7px;
-  padding: 5px 12px 5px 8px;
-  background: var(--panel);
-  border: 1px solid var(--line2);
-  border-radius: 999px;
-  font-size: 0.77rem; color: var(--text2);
-}
-.user-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--emerald);
-  box-shadow: 0 0 8px rgba(52,211,153,0.6);
-  animation: pulse-dot 2.5s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%,100% { box-shadow: 0 0 5px rgba(52,211,153,0.5); }
-  50% { box-shadow: 0 0 12px rgba(52,211,153,0.8); }
-}
-
-.btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 14px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--line2);
-  background: transparent;
-  color: var(--text2);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.78rem; font-weight: 500;
-  cursor: pointer; text-decoration: none;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.btn:hover { background: var(--panel); color: var(--text); border-color: var(--line2); }
-.btn.primary {
-  background: rgba(45,226,203,0.1);
-  border-color: rgba(45,226,203,0.3);
-  color: var(--teal);
-}
-.btn.primary:hover { background: rgba(45,226,203,0.18); border-color: rgba(45,226,203,0.5); }
-.btn.ghost { border-color: transparent; }
-.btn.ghost:hover { border-color: rgba(248,113,113,0.25); color: var(--rose); background: rgba(248,113,113,0.05); }
-.btn svg { flex-shrink: 0; }
-
-/* ═══════════════════════════════════════════
-   HAMBURGER (mobile)
-═══════════════════════════════════════════ */
-.hamburger {
-  display: none;
-  flex-direction: column; gap: 4px;
-  width: 34px; height: 34px;
-  align-items: center; justify-content: center;
-  background: var(--panel); border: 1px solid var(--line2);
-  border-radius: var(--r-sm); cursor: pointer;
-  transition: background 0.2s;
-}
-.hamburger span {
-  display: block; width: 16px; height: 1.5px;
-  background: var(--text2); border-radius: 2px;
-  transition: all 0.3s;
-}
-.hamburger.open span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
-.hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-.hamburger.open span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
-
-/* ═══════════════════════════════════════════
-   LAYOUT
-═══════════════════════════════════════════ */
-.layout {
-  position: relative; z-index: 1;
-  display: grid;
-  grid-template-columns: 272px 1fr;
-  min-height: calc(100vh - 60px);
-}
-
-/* ═══════════════════════════════════════════
-   SIDEBAR
-═══════════════════════════════════════════ */
-.sidebar {
-  background: var(--bg2);
-  border-right: 1px solid var(--line);
-  padding: 20px 14px 32px;
-  display: flex; flex-direction: column; gap: 20px;
-  position: sticky; top: 60px;
-  height: calc(100vh - 60px);
-  overflow-y: auto;
-  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-}
-.sidebar::-webkit-scrollbar { width: 2px; }
-.sidebar::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 4px; }
-
-.section-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.6rem; font-weight: 500;
-  letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--text3);
-  padding: 0 4px;
-  display: flex; align-items: center; gap: 8px;
-}
-.section-label::after {
-  content: '';
-  flex: 1; height: 1px;
-  background: var(--line);
-}
-
-.field { display: flex; flex-direction: column; gap: 5px; }
-.field-label {
-  font-size: 0.67rem; font-weight: 500;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text3); padding-left: 2px;
-}
-.field select {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: 9px 34px 9px 12px;
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.82rem;
-  outline: none; cursor: pointer;
-  appearance: none; width: 100%;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%233d4f6a' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 12px center;
-  transition: border-color 0.2s, background 0.2s;
-}
-.field select:focus { border-color: rgba(45,226,203,0.4); background-color: var(--panel2); outline: none; }
-.field select option { background: #080c14; }
-/* ===== SELECT DROPDOWN FIX ===== */
-
-select {
-    background: #0b1020 !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255,255,255,0.12);
-}
-
-select option {
-    background: #0b1020 !important;
-    color: #ffffff !important;
-}
-
-.controls-stack { display: flex; flex-direction: column; gap: 10px; }
-
-.btn-generate {
-  width: 100%; padding: 12px;
-  border: none; border-radius: var(--r-md);
-  background: linear-gradient(135deg, var(--teal) 0%, var(--violet) 100%);
-  color: #04050a;
-  font-family: 'Syne', sans-serif;
-  font-size: 0.84rem; font-weight: 700;
-  cursor: pointer; letter-spacing: 0.03em;
-  transition: all 0.2s;
-  box-shadow: 0 4px 20px rgba(45,226,203,0.15);
-  display: flex; align-items: center; justify-content: center; gap: 7px;
-}
-.btn-generate:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 28px rgba(45,226,203,0.25); }
-.btn-generate:active { transform: translateY(0); }
-
-.btn-download {
-  width: 100%; padding: 10px 12px;
-  border-radius: var(--r-md);
-  background: rgba(52,211,153,0.06);
-  border: 1px solid rgba(52,211,153,0.18);
-  color: var(--emerald);
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500; font-size: 0.78rem;
-  cursor: pointer; text-decoration: none;
-  display: flex; align-items: center; justify-content: center; gap: 7px;
-  transition: all 0.2s;
-}
-.btn-download:hover { background: rgba(52,211,153,0.12); border-color: rgba(52,211,153,0.35); transform: translateY(-1px); }
-
-.divider { border: none; border-top: 1px solid var(--line); margin: 0 2px; }
-
-/* ── Leaderboard ── */
-.lb-header {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  margin-bottom: 8px;
-}
-.lb-count {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.64rem;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 2px 8px; color: var(--text3);
-}
-.lb-item {
-  display: flex; align-items: center; gap: 9px;
-  padding: 9px 10px;
-  border-radius: var(--r-sm);
-  margin-bottom: 3px;
-  border: 1px solid transparent;
-  background: rgba(255,255,255,0.014);
-  transition: all 0.2s;
-  cursor: default;
-}
-.lb-item:hover { background: rgba(45,226,203,0.04); border-color: rgba(45,226,203,0.1); transform: translateX(3px); }
-.lb-item.rank1 { background: rgba(251,191,36,0.05); border-color: rgba(251,191,36,0.12); }
-.lb-item.rank1:hover { background: rgba(251,191,36,0.09); border-color: rgba(251,191,36,0.25); }
-
-.lb-rank {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem; font-weight: 500;
-  width: 14px; text-align: center; flex-shrink: 0; color: var(--text3);
-}
-.lb-rank.gold   { color: var(--gold); }
-.lb-rank.silver { color: var(--silver); }
-.lb-rank.bronze { color: var(--bronze); }
-
-.lb-name { flex: 1; font-size: 0.78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lb-val  { font-family: 'DM Mono', monospace; font-size: 0.74rem; font-weight: 500; color: var(--emerald); }
-
-.lb-empty {
-  padding: 20px 12px; text-align: center;
-  color: var(--text3); font-size: 0.77rem;
-  border: 1px dashed var(--text3); border-radius: var(--r-sm);
-  line-height: 1.65;
-}
-
-/* ═══════════════════════════════════════════
-   MAIN
-═══════════════════════════════════════════ */
-.main {
-  padding: 28px 28px 48px;
-  display: flex; flex-direction: column; gap: 22px;
-  min-width: 0;
-}
-
-/* ── Page Header ── */
-.page-header {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 16px; flex-wrap: wrap;
-}
-.page-title {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(1.7rem, 3vw, 2.4rem);
-  font-weight: 800; color: var(--text);
-  letter-spacing: -0.03em; line-height: 1.05;
-}
-.page-title span { color: var(--teal); }
-.page-sub {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 0.77rem; color: var(--text3); margin-top: 5px;
-}
-.page-sub .dot { color: var(--line2); }
-.live-badge {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 7px 14px; border-radius: 999px;
-  background: rgba(52,211,153,0.07);
-  border: 1px solid rgba(52,211,153,0.2);
-  font-size: 0.74rem; font-weight: 500;
-  color: var(--emerald); white-space: nowrap;
-  font-family: 'DM Mono', monospace;
-}
-.live-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--emerald);
-  animation: pulse-dot 2.5s ease-in-out infinite;
-}
-
-/* ═══════════════════════════════════════════
-   KPI STRIP
-═══════════════════════════════════════════ */
-.kpi-strip {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-}
-.kpi {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: 18px 20px;
-  position: relative; overflow: hidden;
-  transition: transform 0.2s, border-color 0.2s;
-  animation: fadein 0.5s ease both;
-}
-.kpi:nth-child(1) { animation-delay: 0.05s; }
-.kpi:nth-child(2) { animation-delay: 0.10s; }
-.kpi:nth-child(3) { animation-delay: 0.15s; }
-.kpi:nth-child(4) { animation-delay: 0.20s; }
-.kpi:nth-child(5) { animation-delay: 0.25s; }
-
-@keyframes fadein {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.kpi:hover { transform: translateY(-2px); border-color: var(--line2); }
-.kpi-top-line {
-  position: absolute; top: 0; left: 16px; right: 16px; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--teal), transparent);
-  opacity: 0.4;
-}
-.kpi-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.62rem; font-weight: 500;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--text3); margin-bottom: 8px;
-}
-.kpi-val {
-  font-family: 'DM Mono', monospace;
-  font-size: 1.7rem; font-weight: 500;
-  color: var(--teal); line-height: 1;
-}
-.kpi-hint {
-  font-size: 0.67rem; color: var(--text3); margin-top: 5px;
-}
-.kpi-val.ok  { color: var(--emerald); }
-.kpi-val.warn { color: var(--amber); }
-.kpi-val.accent2 { color: var(--violet); }
-
-/* ═══════════════════════════════════════════
-   CARDS
-═══════════════════════════════════════════ */
-.card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--r-xl);
-  overflow: hidden;
-  transition: border-color 0.2s;
-  animation: fadein 0.5s ease both;
-}
-.card:hover { border-color: var(--line2); }
-
-.card-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px 13px;
-  border-bottom: 1px solid var(--line);
-}
-.card-head-left { display: flex; align-items: center; gap: 10px; }
-.card-icon {
-  width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
-  background: rgba(45,226,203,0.07);
-  border: 1px solid rgba(45,226,203,0.14);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.9rem;
-}
-.card-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.78rem; font-weight: 700;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--text);
-}
-.card-badge {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.64rem;
-  background: rgba(45,226,203,0.06);
-  border: 1px solid rgba(45,226,203,0.14);
-  border-radius: 999px;
-  padding: 3px 9px; color: var(--teal);
-}
-.card-body { padding: 20px; }
-
-/* ═══════════════════════════════════════════
-   AI INSIGHTS
-═══════════════════════════════════════════ */
-.insights-list{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  padding:20px;
-}
-
-.insight-item{
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(0,255,255,0.08);
-  padding:14px 18px;
-  border-radius:12px;
-  color:#d7e3ff;
-  font-size:14px;
-  line-height:1.6;
-}
-.insights-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
-}
-.insight-item {
-  background: rgba(45,226,203,0.04);
-  border: 1px solid rgba(45,226,203,0.1);
-  border-radius: var(--r-md);
-  padding: 14px 16px;
-  font-size: 0.82rem; line-height: 1.65;
-  color: var(--text2); position: relative; overflow: hidden;
-  transition: all 0.2s;
-}
-.insight-item:hover {
-  background: rgba(45,226,203,0.08);
-  border-color: rgba(45,226,203,0.22);
-  color: var(--text);
-}
-.insight-item::before {
-  content: '✦';
-  font-size: 0.65rem; color: var(--teal);
-  display: block; margin-bottom: 5px; opacity: 0.7;
-}
-
-/* ═══════════════════════════════════════════
-   CHART AREA
-═══════════════════════════════════════════ */
-.chart-container {
-  border-radius: var(--r-md); overflow: hidden;
-  background: var(--panel2);
-  border: 1px solid var(--line);
-  min-height: 280px;
-}
-.chart-empty-state {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 64px 32px; gap: 14px;
-  text-align: center;
-}
-.chart-empty-icon {
-  width: 56px; height: 56px; border-radius: 16px;
-  background: rgba(45,226,203,0.05);
-  border: 1px solid rgba(45,226,203,0.1);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.6rem;
-}
-.chart-empty-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
-.chart-empty-p { font-size: 0.78rem; color: var(--text3); line-height: 1.65; max-width: 220px; }
-.chart-empty-p strong { color: var(--teal); }
-
-.download-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  margin-top: 16px; padding: 10px 18px;
-  border-radius: var(--r-md);
-  background: linear-gradient(135deg, rgba(45,226,203,0.15), rgba(167,139,250,0.15));
-  border: 1px solid rgba(45,226,203,0.2);
-  color: var(--teal); font-size: 0.8rem; font-weight: 600;
-  text-decoration: none; cursor: pointer;
-  font-family: 'Syne', sans-serif; letter-spacing: 0.04em;
-  transition: all 0.2s;
-}
-.download-btn:hover { background: linear-gradient(135deg, rgba(45,226,203,0.25), rgba(167,139,250,0.25)); border-color: rgba(45,226,203,0.4); transform: translateY(-1px); }
-
-/* ═══════════════════════════════════════════
-   DATA QUALITY
-═══════════════════════════════════════════ */
-.quality-cells {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
-}
-.q-cell {
-  background: var(--panel2);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  padding: 14px; text-align: center;
-}
-.q-cell.span2 { grid-column: span 2; }
-.q-label-s {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.62rem; font-weight: 500;
-  letter-spacing: 0.09em; text-transform: uppercase;
-  color: var(--text3); margin-bottom: 6px;
-}
-.q-val {
-  font-family: 'DM Mono', monospace;
-  font-size: 1.3rem; font-weight: 500;
-  color: var(--violet);
-}
-
-/* ═══════════════════════════════════════════
-   UPLOADS TABLE
-═══════════════════════════════════════════ */
-.table-wrap { overflow-x: auto; }
-.data-table {
-  width: 100%; border-collapse: collapse;
-  min-width: 420px;
-}
-.data-table thead th {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.62rem; font-weight: 500;
-  letter-spacing: 0.09em; text-transform: uppercase;
-  color: var(--text3); padding: 0 14px 10px;
-  text-align: left; border-bottom: 1px solid var(--line);
-}
-.data-table tbody tr {
-  border-bottom: 1px solid var(--line);
-  transition: background 0.15s;
-}
-.data-table tbody tr:last-child { border-bottom: none; }
-.data-table tbody tr:hover { background: rgba(255,255,255,0.016); }
-.data-table tbody td {
-  padding: 11px 14px; font-size: 0.8rem;
-  color: var(--text); vertical-align: middle;
-}
-.data-table tbody td.dim { color: var(--text3); font-size: 0.74rem; font-family: 'DM Mono', monospace; }
-
-.file-chip {
-  font-family: 'DM Mono', monospace; font-size: 0.73rem;
-  background: rgba(45,226,203,0.06);
-  border: 1px solid rgba(45,226,203,0.14);
-  border-radius: 6px; padding: 2px 8px;
-  color: var(--teal); display: inline-block;
-}
-.rows-chip { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text3); }
-
-/* ═══════════════════════════════════════════
-   PREVIEW TABLE
-═══════════════════════════════════════════ */
-.preview-section { display: flex; flex-direction: column; gap: 12px; }
-.preview-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.9rem; font-weight: 700;
-  letter-spacing: 0.06em; color: var(--text);
-  display: flex; align-items: center; gap: 8px;
-}
-.preview-title::before {
-  content: '';
-  width: 3px; height: 16px; border-radius: 2px;
-  background: var(--teal);
-}
-.preview-table-wrap {
-  overflow-x: auto; border-radius: var(--r-lg);
-  border: 1px solid var(--line);
-}
-.preview-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-.preview-table thead th {
-  background: var(--panel2);
-  color: var(--teal);
-  padding: 13px 14px; text-align: left;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.72rem; font-weight: 500;
-  letter-spacing: 0.06em;
-  border-bottom: 1px solid var(--line);
-}
-.preview-table tbody td {
-  padding: 11px 14px;
-  border-top: 1px solid var(--line);
-  color: var(--text2); font-size: 0.8rem;
-}
-.preview-table tbody tr:hover { background: rgba(255,255,255,0.018); }
-
-/* ═══════════════════════════════════════════
-   TWO COLUMN
-═══════════════════════════════════════════ */
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-/* ═══════════════════════════════════════════
-   RESPONSIVE
-═══════════════════════════════════════════ */
-@media (max-width: 1160px) {
-  .kpi-strip { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 960px) {
-  .layout { grid-template-columns: 1fr; }
-  .sidebar {
-    position: fixed;
-    top: 60px; left: 0; bottom: 0;
-    width: 280px; z-index: 400;
-    transform: translateX(-100%);
-    box-shadow: 4px 0 32px rgba(0,0,0,0.5);
-  }
-  .sidebar.open { transform: translateX(0); }
-  .sidebar-overlay {
-    display: none;
-    position: fixed; inset: 0; z-index: 399;
-    background: rgba(4,5,10,0.7);
-    backdrop-filter: blur(4px);
-  }
-  .sidebar-overlay.open { display: block; }
-  .hamburger { display: flex; }
-  .main { padding: 20px 16px 40px; }
-  .topbar { padding: 0 16px; }
-  .topbar-mid { display: none; }
-  .two-col { grid-template-columns: 1fr; }
-  .kpi-strip { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 560px) {
-  .kpi-strip { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .kpi-val { font-size: 1.4rem; }
-  .page-title { font-size: 1.5rem; }
-  .topbar-right .btn.primary { display: none; }
-  .insights-grid { grid-template-columns: 1fr; }
-}
-.dashboard-main{
-    width:100%;
-    overflow-x:hidden;
-}
-
-.dashboard-content{
-    width:100%;
-    overflow-x:hidden;
-}
-
-.analytics-card,
-.ai-card,
-.dashboard-card{
-    width:100%;
-    max-width:100%;
-    overflow:hidden;
-}
-
-.insights-list{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-    gap:16px;
-    width:100%;
-}
-
-.chart-wrap{
-    width:100%;
-    overflow-x:auto;
-}
-
-.js-plotly-plot{
-    width:100% !important;
-}
-.insights-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:16px;
-    margin-top:20px;
-}
-
-.insight-item{
-    background:rgba(12,18,40,0.9);
-    border:1px solid rgba(0,255,255,0.15);
-    padding:18px;
-    border-radius:18px;
-    color:#dbeafe;
-    font-size:15px;
-    transition:0.3s;
-}
-
-.insight-item:hover{
-    transform:translateY(-4px);
-    border-color:#22d3ee;
-}
-.theme-btn{
-    padding:12px 18px;
-    border:none;
-    border-radius:12px;
-    cursor:pointer;
-    background:#0f172a;
-    color:white;
-    font-weight:600;
-}
-
-/* =========================================
-   CLEAN LIGHT MODE
-========================================= */
-
-body.light-mode{
-    background:#f3f4f6;
-    color:#111827;
-}
-
-/* Main background */
-body.light-mode .main{
-    background:#f3f4f6;
-}
-
-/* Topbar */
-body.light-mode .topbar{
-    background:#ffffffee;
-    border-bottom:1px solid #dbe3ea;
-}
-
-/* Sidebar stays dark */
-body.light-mode .sidebar{
-    background:#020617;
-    border-right:1px solid #1e293b;
-}
-
-/* Cards */
-body.light-mode .card,
-body.light-mode .kpi,
-body.light-mode .q-cell,
-body.light-mode .chart-container,
-body.light-mode .preview-table-wrap{
-    background:#ffffff;
-    border:1px solid #dbe3ea;
-    color:#111827;
-    box-shadow:0 2px 8px rgba(0,0,0,0.05);
-}
-
-/* Text */
-body.light-mode .page-title,
-body.light-mode .card-title,
-body.light-mode .lb-name,
-body.light-mode td,
-body.light-mode th,
-body.light-mode p,
-body.light-mode span,
-body.light-mode label{
-    color:#111827;
-}
-
-/* Small muted text */
-body.light-mode .page-sub,
-body.light-mode .kpi-label,
-body.light-mode .kpi-hint,
-body.light-mode .q-label-s{
-    color:#6b7280;
-}
-
-/* Tables */
-body.light-mode table{
-    background:#ffffff;
-}
-
-body.light-mode .preview-table thead th,
-body.light-mode .data-table thead th{
-    background:#f3f4f6;
-    color:#111827;
-}
-
-/* AI Insights */
-body.light-mode .insight-item{
-    background:#f9fafb;
-    border:1px solid #dbe3ea;
-    color:#111827;
-}
-
-/* Inputs */
-body.light-mode select,
-body.light-mode input{
-    background:#ffffff;
-    color:#111827;
-    border:1px solid #cbd5e1;
-}
-
-/* Plotly */
-
-/* =========================================
-   FINAL BUTTON + SIDEBAR LIGHT FIX
-========================================= */
-
-/* Sidebar inputs stay dark */
-body.light-mode .sidebar select,
-body.light-mode .sidebar input{
-    background:#0b1020 !important;
-    color:#ffffff !important;
-    border:1px solid #1e293b !important;
-}
-
-/* Sidebar labels */
-body.light-mode .sidebar .field-label,
-body.light-mode .sidebar .section-label,
-body.light-mode .sidebar .lb-name,
-body.light-mode .sidebar .lb-rank{
-    color:#cbd5e1 !important;
-}
-
-/* Leaderboard cards */
-body.light-mode .sidebar .lb-item{
-    background:#020617 !important;
-    border:1px solid #1e293b !important;
-}
-
-/* Generate button */
-body.light-mode .btn-generate{
-    background:linear-gradient(135deg,#22d3ee,#a78bfa) !important;
-    color:#020617 !important;
-    border:none !important;
-}
-
-/* Download buttons */
-body.light-mode .btn-download,
-body.light-mode .download-btn{
-    background:#ecfeff !important;
-    color:#0891b2 !important;
-    border:1px solid #a5f3fc !important;
-}
-
-/* Top buttons */
-body.light-mode .btn,
-body.light-mode .theme-btn{
-    background:#ffffff !important;
-    color:#111827 !important;
-    border:1px solid #d1d5db !important;
-}
-
-/* Toggle theme button */
-body.light-mode .theme-btn{
-    background:#0f172a !important;
-    color:#ffffff !important;
-}
-
-/* New Upload button */
-body.light-mode .btn.primary{
-    background:#ecfeff !important;
-    color:#0891b2 !important;
-    border:1px solid #a5f3fc !important;
-}
-
-/* Logout button */
-body.light-mode .btn.ghost{
-    background:#ffffff !important;
-    color:#6b7280 !important;
-}
-
-/* Live badge */
-body.light-mode .live-badge{
-    background:#ecfdf5 !important;
-    color:#10b981 !important;
-    border:1px solid #bbf7d0 !important;
-}
-
-/* User pill */
-body.light-mode .user-pill{
-    background:#ffffff !important;
-    color:#111827 !important;
-    border:1px solid #d1d5db !important;
-}
-/* =========================================
-   PERFECT LIGHT MODE FIX
-========================================= */
-
-/* DARK MODE DEFAULT */
-.card,
-.kpi,
-.chart-container,
-.q-cell,
-.preview-table-wrap,
-.preview-table thead th,
-.data-table thead th{
-    transition:0.3s ease;
-}
-
-/* LIGHT MODE */
-body.light-mode .card,
-body.light-mode .kpi,
-body.light-mode .chart-container,
-body.light-mode .q-cell,
-body.light-mode .preview-table-wrap{
-    background:#ffffff !important;
-    border:1px solid #dbe3ea !important;
-    color:#111827 !important;
-}
-
-/* TABLES */
-body.light-mode .preview-table thead th,
-body.light-mode .data-table thead th{
-    background:#f3f4f6 !important;
-    color:#111827 !important;
-}
-
-body.light-mode .preview-table tbody td,
-body.light-mode .data-table tbody td{
-    color:#111827 !important;
-}
-
-/* INSIGHTS */
-body.light-mode .insight-item{
-    background:#f9fafb !important;
-    border:1px solid #dbe3ea !important;
-    color:#111827 !important;
-}
-
-/* KEEP SIDEBAR DARK */
-
-/* PAGE BG */
-body.light-mode{
-    background:#f3f4f6 !important;
-}
-
-body.light-mode .main{
-    background:#f3f4f6 !important;
-}
-/* LIGHT SIDEBAR */
-body.light-mode .sidebar{
-    background:#ffffff !important;
-    border-right:1px solid #dbe3ea !important;
-}
-
-/* Sidebar text */
-body.light-mode .sidebar .field-label,
-body.light-mode .sidebar .section-label,
-body.light-mode .sidebar .lb-name,
-body.light-mode .sidebar .lb-rank{
-    color:#111827 !important;
-}
-
-/* Inputs */
-body.light-mode .sidebar select{
-    background:#ffffff !important;
-    color:#111827 !important;
-    border:1px solid #cbd5e1 !important;
-}
-
-/* Leaderboard */
-body.light-mode .sidebar .lb-item{
-    background:#ffffff !important;
-    border:1px solid #e5e7eb !important;
-}
-
-/* Values */
-body.light-mode .sidebar .lb-val{
-    color:#0891b2 !important;
-}
-body.light-mode .theme-btn{
-    background:#111827 !important;
-    color:#ffffff !important;
-    border:none !important;
-}
-/* FORCE LIGHT MODE THEME BUTTON */
-body.light-mode .theme-btn{
-    background:#ffffff !important;
-    color:#111827 !important;
-    border:1px solid #cbd5e1 !important;
-    box-shadow:none !important;
-}
-
-body.light-mode .theme-btn:hover{
-    background:#f3f4f6 !important;
-}
-.prediction-card{
-    margin-top:20px;
-    padding:18px;
-    border-radius:16px;
-    background:linear-gradient(135deg,#0ea5e9,#22d3ee);
-    color:white;
-    font-weight:700;
-}
-/* ===== PROFILE BUTTON ===== */
-
-.profile-btn {
-
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-
-    padding: 10px 18px;
-
-    border-radius: 14px;
-
-    background: linear-gradient(
-        135deg,
-        #28d7c5,
-        #8f7cff
-    );
-
-    color: white !important;
-
-    font-weight: 600;
-
-    text-decoration: none;
-
-    transition: 0.3s ease;
-
-    box-shadow:
-        0 4px 18px rgba(0,0,0,0.18);
-}
-
-.profile-btn:hover {
-
-    transform: translateY(-2px);
-
-    opacity: 0.95;
-}
-/* ===== LIGHT MODE FIXES ===== */
-
-body.light-mode select {
-
-    background: #ffffff !important;
-
-    color: #000000 !important;
-
-    border: 1px solid #cfd8dc !important;
-}
-
-body.light-mode select option {
-
-    background: #ffffff !important;
-
-    color: #000000 !important;
-}
-
-/* leaderboard small circle fix */
-
-body.light-mode .top-badge,
-body.light-mode .mini-badge,
-body.light-mode .count-badge {
-
-    background: #0b1020 !important;
-
-    color: #ffffff !important;
-
-    border: none !important;
-}
-
-/* leaderboard cards */
-
-body.light-mode .leaderboard-item {
-
-    background: #ffffff !important;
-
-    color: #111827 !important;
-
-    border: 1px solid #dbe4ea !important;
-}
-
-/* leaderboard value text */
-
-body.light-mode .leaderboard-value {
-
-    color: #00b894 !important;
-}
-/* LIGHT MODE TOP 5 BADGE FIX */
-
-body.light-mode .leaderboard-header-badge,
-body.light-mode .top-count,
-body.light-mode .top-badge,
-body.light-mode .count-circle {
-
-    background: #dfe6eb !important;
-
-    color: #111827 !important;
-
-    border: 1px solid #cfd8dc !important;
-}
-/* LIGHT MODE LEADERBOARD FIX */
-
-body.light-mode .lb-count {
-
-    background: #e2e8f0 !important;
-
-    color: #111827 !important;
-
-    border: 1px solid #cbd5e1 !important;
-}
-
-/* leaderboard cards */
-
-body.light-mode .lb-item {
-
-    background: #ffffff !important;
-
-    color: #111827 !important;
-
-    border: 1px solid #d1d5db !important;
-}
-
-/* leaderboard values */
-
-body.light-mode .lb-value {
-
-    color: #06b6d4 !important;
-}
-
-/* leaderboard rank */
-
-body.light-mode .lb-rank {
-
-    color: #111827 !important;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Analytics Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Dark Mode (Default) */
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --border: #334155;
+            --table-header: #334155;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            /* Light Mode */
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent: #0284c7;
+            --border: #e2e8f0;
+            --table-header: #f8fafc;
+            --shadow: rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header & Toggle */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px var(--shadow);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+
+        /* KPI Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 15px -3px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: var(--accent);
+        }
+
+        .card h2 {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Charts */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .chart {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 15px -3px var(--shadow);
+        }
+
+        /* Table */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px var(--shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th {
+            background: var(--table-header);
+            color: var(--text-muted);
+            padding: 18px;
+            text-align: left;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table td {
+            padding: 18px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        table tr:last-child td { border-bottom: none; }
+        table tr:hover { background: rgba(56, 189, 248, 0.05); }
+
+        @media (max-width: 900px) {
+            .chart-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="bg-canvas">
-  <div class="bg-grid"></div>
-  <div class="bg-orb1"></div>
-  <div class="bg-orb2"></div>
-  <div class="bg-orb3"></div>
-</div>
+<div class="container">
+    <header>
+        <h1>🌦 Weather <span style="color: var(--accent);">Dashboard</span></h1>
+        <button class="theme-toggle" id="theme-btn">
+            <i class="fas fa-moon" id="theme-icon"></i>
+            <span id="theme-text">Dark Mode</span>
+        </button>
+    </header>
 
-<!-- Sidebar Overlay (mobile) -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-<!-- ═══════ TOPBAR ═══════ -->
-<nav class="topbar">
-  <div style="display:flex;align-items:center;gap:10px;">
-    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-    <a class="logo" href="#">
-      <div class="logo-mark"></div>
-      <span class="logo-name">Analytics Studio</span>
-    </a>
-  </div>
-
-  <div class="topbar-mid">
-    <div class="breadcrumb">
-      <span>workspace</span>
-      <span class="sep">/</span>
-      <span class="active">dashboard</span>
-    </div>
-  </div>
-
-  <div class="topbar-right">
-    <div class="user-pill">
-      <div class="user-dot"></div>
-      {{ current_user.username }}
-    </div>
-    <a href="/profile" class="profile-btn">
-    👤 Profile
-</a>
-    <a href="/upload_page" class="btn primary">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      New Upload
-    </a>
-    <button id="themeToggle" class="theme-btn">
-    🌙 Toggle Theme
-</button>
-    <a href="/logout" class="btn ghost">Logout</a>
-  </div>
-</nav>
-
-<!-- ═══════ LAYOUT ═══════ -->
-<div class="layout">
-
-  <!-- ─── SIDEBAR ─── -->
-  <aside class="sidebar" id="sidebar">
-
-    <div class="section-label">Controls</div>
-
-    <form class="controls-stack" action="/generate_chart" method="POST">
-      <div class="field">
-        <div class="field-label">X Axis — Dimension</div>
-        <select name="x_column">
-          {% for col in columns %}
-            <option value="{{ col }}">{{ col }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="field">
-        <div class="field-label">Y Axis — Metric</div>
-        <select name="y_column">
-          {% for col in numeric_columns %}
-            <option value="{{ col }}">{{ col }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="field">
-        <div class="field-label">Chart Type</div>
-        <select name="chart_type">
-          <option value="bar">Bar Chart</option>
-          <option value="line">Line Graph</option>
-          <option value="scatter">Scatter Plot</option>
-          <option value="area">Area Chart</option>
-        </select>
-      </div>
-      <button type="submit" class="btn-generate">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        Generate Chart
-      </button>
-    </form>
-
-    <a href="/download_csv" class="btn-download">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-      Download Cleaned CSV
-    </a>
-
-    <hr class="divider">
-
-   <!-- Leaderboard -->
-<div>
-
-    <div class="lb-header">
-
-        <div class="section-label" style="flex:1;margin:0;">
-
-            Top 5 Highest {{ leaderboard_y }}
-
+    <!-- KPI CARDS -->
+    <div class="cards">
+        <div class="card">
+            <h2>🌡 Avg Temp</h2>
+            <p>{{ avg_temp }} °C</p>
         </div>
-
-        {% if leaderboard_data %}
-            <span class="lb-count">
-                {{ leaderboard_data | length }}
-            </span>
-        {% endif %}
-
+        <div class="card">
+            <h2>💧 Avg Humidity</h2>
+            <p>{{ avg_humidity }} %</p>
+        </div>
+        <div class="card">
+            <h2>🌍 Total Cities</h2>
+            <p>{{ total_cities }}</p>
+        </div>
+        <div class="card">
+            <h2>⏰ Last Updated</h2>
+            <p style="font-size: 1.2rem; margin-top: 10px;">{{ last_updated }}</p>
+        </div>
     </div>
 
-    {% if leaderboard_data %}
-
-        {% for row in leaderboard_data %}
-
-        <div class="lb-item {% if loop.index == 1 %}rank1{% endif %}">
-
-            <!-- Rank -->
-            <div class="lb-rank
-                {% if loop.index == 1 %}
-                    gold
-                {% elif loop.index == 2 %}
-                    silver
-                {% elif loop.index == 3 %}
-                    bronze
-                {% endif %}
-            ">
-                {{ loop.index }}
-            </div>
-
-            <!-- Name -->
-            <div
-                class="lb-name"
-                title="{{ row[leaderboard_x] }}"
-            >
-                {{ row[leaderboard_x] }}
-            </div>
-
-            <!-- Value -->
-            <div class="lb-val">
-
-                {% if row[leaderboard_y] is number %}
-                    {{ "%.0f"|format(row[leaderboard_y]) }}
-                {% else %}
-                    {{ row[leaderboard_y] }}
-                {% endif %}
-
-            </div>
-
-        </div>
-
-        {% endfor %}
-
-    {% else %}
-
-        <div class="lb-empty">
-            No category + numeric columns available for ranking.
-        </div>
-
-    {% endif %}
-
-</div>
-</aside>
-
-  <!-- ─── MAIN ─── -->
-  <main class="main">
-
-    <!-- Page Header -->
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Engineering <span>Insights</span></h1>
-        <div class="page-sub">
-          Dataset loaded &amp; cleaned <span class="dot">·</span> Ready to analyze
-        </div>
-      </div>
-      <div class="live-badge">
-        <div class="live-dot"></div>
-        Live Session
-      </div>
+    <!-- CHARTS GRID -->
+    <div class="chart-grid">
+        <div class="chart">{{ temp_chart | safe }}</div>
+        <div class="chart">{{ humidity_chart | safe }}</div>
+        <div class="chart">{{ trend_chart | safe }}</div>
+        <div class="chart">{{ scatter_chart | safe }}</div>
     </div>
 
-    <!-- KPI Strip -->
-    <div class="kpi-strip">
-      <div class="kpi">
-        <div class="kpi-top-line"></div>
-        <div class="kpi-label">Total Rows</div>
-        <div class="kpi-val">{{ total_rows }}</div>
-        <div class="kpi-hint">records loaded</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-top-line"></div>
-        <div class="kpi-label">Columns</div>
-        <div class="kpi-val accent2">{{ total_columns }}</div>
-        <div class="kpi-hint">all fields</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-top-line"></div>
-        <div class="kpi-label">Numeric</div>
-        <div class="kpi-val">{{ numeric_column_count }}</div>
-        <div class="kpi-hint">measurable cols</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-top-line"></div>
-        <div class="kpi-label">Categorical</div>
-        <div class="kpi-val accent2">{{ categorical_column_count }}</div>
-        <div class="kpi-hint">dimension cols</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-top-line"></div>
-        <div class="kpi-label">Missing Cells</div>
-        <div class="kpi-val {% if missing_values == 0 %}ok{% else %}warn{% endif %}">{{ missing_values }}</div>
-        <div class="kpi-hint">null values</div>
-      </div>
-    </div>
-
-   <!-- AI Insights -->
-<div class="card" style="animation-delay:0.1s;">
-
-  <div class="card-head">
-
-    <div class="card-head-left">
-      <div class="card-icon">🧠</div>
-      <span class="card-title">AI Insights</span>
-    </div>
-
-    <span class="card-badge">
-      Auto-generated
-    </span>
-
-  </div>
-
-  <div class="card-body">
-
-    <div class="insights-grid">
-
-      {% for insight in insights %}
-        <div class="insight-item">
-          {{ insight }}
-        </div>
-      {% endfor %}
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- ML Prediction Insights -->
-<div class="card" style="animation-delay:0.12s;">
-
-  <div class="card-head">
-
-    <div class="card-head-left">
-      <div class="card-icon">🤖</div>
-
-      <span class="card-title">
-        ML Prediction Insights
-      </span>
-    </div>
-
-    <span class="card-badge">
-      AI Powered
-    </span>
-
-  </div>
-
-  <div class="card-body">
-
-    <div class="insights-grid">
-
-      <div class="insight-item">
-
-        {% if prediction_message %}
-          {{ prediction_message }}
-        {% else %}
-          No ML prediction available
-        {% endif %}
-
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-<!-- Chart Card -->
-<div class="card" style="animation-delay:0.15s;">
-
-  <div class="card-head">
-
-    <div class="card-head-left">
-      <div class="card-icon">📊</div>
-      <span class="card-title">
-        Analytics Visualization
-      </span>
-    </div>
-
-    <span class="card-badge">
-      Interactive
-    </span>
-
-  </div>
-
-  <div class="card-body" style="padding:16px;">
-
-    <div class="chart-container">
-
-      {% if graph_html %}
-
-        {{ graph_html | safe }}
-
-      {% else %}
-
-        <div class="chart-empty-state">
-
-          <div class="chart-empty-icon">
-            📈
-          </div>
-
-          <div class="chart-empty-title">
-            No chart yet
-          </div>
-
-          <p class="chart-empty-p">
-            Use the controls on the left to pick columns and a chart type,
-            then hit <strong>Generate Chart</strong>.
-          </p>
-
-        </div>
-
-      {% endif %}
-
-    </div>
-
-    <a href="/static/chart.png" download class="download-btn">
-
-      <svg width="13" height="13"
-           viewBox="0 0 24 24"
-           fill="none"
-           stroke="currentColor"
-           stroke-width="2"
-           stroke-linecap="round"
-           stroke-linejoin="round">
-
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-
-      </svg>
-
-      Download Chart PNG
-
-    </a>
-
-  </div>
-
-</div>
-    <!-- Quality Report + Uploads -->
-    {% if quality_report %}
-    <div class="two-col">
-
-      <div class="card" style="animation-delay:0.2s;">
-        <div class="card-head">
-          <div class="card-head-left">
-            <div class="card-icon">🧹</div>
-            <span class="card-title">Data Quality Report</span>
-          </div>
-          <span class="card-badge">Cleaned</span>
-        </div>
-        <div class="card-body">
-          <div class="quality-cells">
-            <div class="q-cell">
-              <div class="q-label-s">Original Rows</div>
-              <div class="q-val">{{ quality_report.original_rows }}</div>
-            </div>
-            <div class="q-cell">
-              <div class="q-label-s">Duplicates Removed</div>
-              <div class="q-val" style="color: {% if quality_report.duplicate_count > 0 %}var(--amber){% else %}var(--emerald){% endif %}">{{ quality_report.duplicate_count }}</div>
-            </div>
-            <div class="q-cell">
-              <div class="q-label-s">Missing Before</div>
-              <div class="q-val">{{ quality_report.missing_before }}</div>
-            </div>
-            <div class="q-cell">
-              <div class="q-label-s">Missing After</div>
-              <div class="q-val" style="color:var(--emerald)">{{ quality_report.missing_after }}</div>
-            </div>
-            <div class="q-cell span2">
-              <div class="q-label-s">Final Row Count</div>
-              <div class="q-val" style="font-size:1.7rem;color:var(--teal)">{{ quality_report.final_rows }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="animation-delay:0.25s;">
-        <div class="card-head">
-          <div class="card-head-left">
-            <div class="card-icon">📂</div>
-            <span class="card-title">Recent Uploads</span>
-          </div>
-          {% if recent_uploads %}
-            <span class="card-badge">{{ recent_uploads | length }} files</span>
-          {% endif %}
-        </div>
-        <div class="card-body" style="padding:0;">
-          {% if recent_uploads %}
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Filename</th>
-                  <th>Rows</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for item in recent_uploads %}
-                <tr>
-                  <td><span class="file-chip">{{ item.filename }}</span></td>
-                  <td><span class="rows-chip">{{ item.rows_processed }}</span></td>
-                  <td class="dim">{{ item.uploaded_at.strftime('%d %b %Y') }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-            <div style="padding:28px;text-align:center;color:var(--text3);font-size:0.8rem;">No uploads yet.</div>
-          {% endif %}
-        </div>
-      </div>
-
-    </div>
-    {% endif %}
-
-    <!-- Dataset Preview -->
-    <div class="card" style="animation-delay:0.3s;">
-      <div class="card-head">
-        <div class="card-head-left">
-          <div class="card-icon">📄</div>
-          <span class="card-title">Cleaned Dataset Preview</span>
-        </div>
-      </div>
-      <div class="card-body" style="padding:0;">
-        <div class="preview-table-wrap">
-          <table class="preview-table">
+    <!-- DATA TABLE -->
+    <h2 style="margin-bottom: 20px; font-size: 1.5rem;">📋 Detailed Weather Logs</h2>
+    <div class="table-container">
+        <table>
             <thead>
-              <tr>
-                {% for col in columns %}
-                  <th>{{ col }}</th>
-                {% endfor %}
-              </tr>
+                <tr>
+                    <th>City</th>
+                    <th>Temperature</th>
+                    <th>Humidity</th>
+                    <th>Timestamp</th>
+                </tr>
             </thead>
             <tbody>
-              {% for row in preview %}
-              <tr>
-                {% for col in columns %}
-                  <td>{{ row[col] }}</td>
+                {% for row in weather_data %}
+                <tr>
+                    <td><strong>{{ row.city }}</strong></td>
+                    <td>{{ row.temp }} °C</td>
+                    <td>{{ row.humidity }} %</td>
+                    <td style="color: var(--text-muted);">{{ row.created_at }}</td>
+                </tr>
                 {% endfor %}
-              </tr>
-              {% endfor %}
             </tbody>
-          </table>
-        </div>
-      </div>
+        </table>
     </div>
-
-  </main>
 </div>
 
 <script>
+    const themeBtn = document.getElementById('theme-btn');
+    const themeIcon = document.getElementById('theme-icon');
+    const themeText = document.getElementById('theme-text');
+    const htmlElement = document.documentElement;
 
-function toggleSidebar() {
-
-  const sb = document.getElementById('sidebar');
-  const ov = document.getElementById('sidebarOverlay');
-  const hb = document.getElementById('hamburger');
-
-  sb.classList.toggle('open');
-  ov.classList.toggle('open');
-  hb.classList.toggle('open');
-}
-
-function closeSidebar() {
-
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('open');
-  document.getElementById('hamburger').classList.remove('open');
-}
-
-// Close sidebar on desktop resize
-window.addEventListener('resize', () => {
-
-  if (window.innerWidth > 960) {
-
-    closeSidebar();
-
-  }
-
-});
-
-// ---------------- THEME TOGGLE ----------------
-
-const toggleBtn = document.getElementById("themeToggle");
-
-if (toggleBtn) {
-
-    // Load saved theme
-    if(localStorage.getItem("theme") === "light") {
-
-        document.body.classList.add("light-mode");
-
+    // Check for saved theme in localStorage
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    if (currentTheme === 'light') {
+        enableLightMode();
     }
 
-    toggleBtn.addEventListener("click", () => {
-
-        document.body.classList.toggle("light-mode");
-
-        if(document.body.classList.contains("light-mode")) {
-
-            localStorage.setItem("theme", "light");
-
+    themeBtn.addEventListener('click', () => {
+        if (htmlElement.getAttribute('data-theme') === 'light') {
+            enableDarkMode();
         } else {
-
-            localStorage.setItem("theme", "dark");
-
+            enableLightMode();
         }
-
     });
 
-}
+    function enableLightMode() {
+        htmlElement.setAttribute('data-theme', 'light');
+        themeIcon.className = 'fas fa-sun';
+        themeText.innerText = 'Light Mode';
+        localStorage.setItem('theme', 'light');
+    }
 
+    function enableDarkMode() {
+        htmlElement.removeAttribute('data-theme');
+        themeIcon.className = 'fas fa-moon';
+        themeText.innerText = 'Dark Mode';
+        localStorage.setItem('theme', 'dark');
+    }
+
+    // Auto-Refresh
+    setTimeout(() => {
+        location.reload();
+    }, 30000);
 </script>
 
-<a href="/download_report" class="btn-download">
-    📄 Download PDF Report
-</a>
 </body>
 </html>

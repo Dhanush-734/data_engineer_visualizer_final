@@ -1,44 +1,50 @@
-version: '3.9'
+version: '3.8'
 
 services:
 
   web:
-
     build: .
-
     container_name: analytics_app
-
     ports:
       - "5000:5000"
-
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/analytics_db
-
     depends_on:
       - db
-
     volumes:
       - .:/app
 
   db:
-
     image: postgres:15
-
     container_name: analytics_db
-
     restart: always
-
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: analytics_db
-
     ports:
       - "5432:5432"
-
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-volumes:
+  airflow:
+    image: apache/airflow:2.9.1
+    container_name: airflow
+    restart: always
+    depends_on:
+      - db
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__WEBSERVER__WORKERS: 1
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@db:5432/analytics_db
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - .:/app
+    command: standalone
 
+volumes:
   postgres_data:
